@@ -1,0 +1,57 @@
+---
+- name: Install MySQL server
+  apt:
+    name: mysql-server
+    state: present
+
+- name: Install Mysqp database packages
+  apt:
+    name: ['python-mysqldb', 'python3-pip']
+    state: present 
+
+- name: Install pip
+  apt:
+    name: python-pip
+    update_cache: yes
+    state: presentSet
+
+- name: Install PyMySQL with pip
+  pip:
+    name: PyMySQL
+
+- name: sql query
+  command:  mysql -u root --execute="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '"{{ wp_mysql_password }}"';"
+
+- name: Create ~/.my.cnf
+  file:
+    path: /root/.my.cnf
+    state: touch
+
+- name: Allow database connection from any IP
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address            = 127.0.0.1'
+    line: 'bind-address            = 0.0.0.0'
+  notify:
+  - Restart MySQL
+
+- name: Insert Credentials into ~/.my.cnf
+  blockinfile:
+    path: /root/.my.cnf
+    block: |
+      [client]
+      user={{ my_sql_user }}
+      password={{ wp_mysql_password }}
+
+- name: create the wordpress database
+  mysql_db:
+    name: "{{ wp_mysql_db }}"
+    state: present
+
+- name: create database user
+  mysql_user:
+    name: "{{ wp_mysql_user }}"
+    password: "{{ wp_mysql_password }}"
+    priv: "*.*:ALL"
+    state: present
+    host: "%"

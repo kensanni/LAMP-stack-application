@@ -1,0 +1,51 @@
+---
+- name: Download wordpress
+  get_url:
+    url: https://wordpress.org/latest.tar.gz
+    dest: /tmp/wordpress.tar.gz
+    validate_certs: no
+
+- name: Extract wordpress
+  unarchive:
+    src: /tmp/wordpress.tar.gz
+    dest: /var/www/html/
+    copy: no
+
+- name: Custom wordpress config file
+  template:
+    src: wp-config.php
+    dest: /var/www/html/wordpress/wp-config.php
+
+- name: secure php config
+  lineinfile:
+    path: /etc/php/7.0/fpm/php.ini
+    regexp: '^;cgi.fix_pathinfo=1'
+    line: 'cgi.fix_pathinfo=0'
+  notify:
+  - restart php7.0-fpm
+
+- name: Remove nginx default configuration
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Change directory permissions
+  file:
+    dest: /var/www/html/wordpress/
+    owner: sannikay
+    group: www-data
+
+- name: Setup wordpress virtual for nginx
+  template:
+    src: nginx.conf
+    dest: /etc/nginx/sites-available/wordpress
+
+- name: Create symlink for wordpress nginx configuration
+  file:
+    src: /etc/nginx/sites-available/wordpress
+    dest: /etc/nginx/sites-enabled/wordpress
+    state: link
+  notify:
+  - restart nginx
+  - restart php7.0-fpm
+

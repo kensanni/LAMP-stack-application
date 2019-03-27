@@ -1,0 +1,5 @@
+---
+wp_mysql_db: wordpressDatabase
+wp_mysql_user: WORDPRESS_DATABASE_USER
+wp_mysql_password: WORDPRESS_DATABASE_PASSWORD
+my_sql_user: root

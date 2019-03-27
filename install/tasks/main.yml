@@ -1,0 +1,24 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Install php processing, database and other package
+  apt:
+    name: [
+      'php7.0-fpm',
+      'php7.0-mysql',
+      'php-xml',
+      'php-mbstring',
+      'php7.0-gd',
+      'php7.0-curl',
+      'php-ssh2',
+      'php-intl',
+      'php-soap',
+      'php-xmlrpc',
+      'php-zip',
+    ]
+
+  
